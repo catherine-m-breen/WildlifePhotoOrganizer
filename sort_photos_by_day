@@ -1,0 +1,54 @@
+## Catherine M. Breen
+## November 29 2020
+
+## this script organizes photos by reading the time they were taken from the camera (os.path.getmtime())
+## it then copies your photos using shutil.copy2(). shutilcopy2() copies all the metadata without changing metadata information. 
+##
+
+## load necessary packages
+import os
+import shutil
+from time import gmtime, strftime
+from datetime import datetime
+
+############
+### if you don't have have folders created to sort your photos by day, the below loop will
+### make those folder for you 
+day = list(range(1,367))
+print(day)
+folder = r'/Volumes/2018_day_sorted/'
+
+## this creates 1-366 folders (includes leap year)
+for i in range(1,367): 
+    os.mkdir(folder+str(i))
+    os.path.isdir(folder+str(i))
+############
+
+
+############
+### organizing photos by day ###
+
+## where your photos are stored, the "r" notation indicates recursive (searches
+## subdirectories
+src = r'/Volumes/2018' 
+
+## your destination for photos, either precreated or created using loop above 
+dayDest = r'/Volumes/2018_day_sorted/'
+
+## the key part of this function is the (os.path.getmtime(filename))[7], which finds 
+## the date this photo was taken; however this could be rearranged for hour, month, etc.
+## the print function could be commented out if you don't want to track the timing of this function
+def sort_day(src, filename, dest):
+    if filename.endswith('.JPG'): 
+        shutil.copy2(filename, dest+str(gmtime(os.path.getmtime(filename))[7]))
+        print(datetime.now().strftime("%H:%M:%S %d"))
+
+## loop that walks through folders and subdirectories and calls function
+for path, subdirs, files in os.walk(src):
+    for name in files:
+        ## the if statement below could be removed if you don't want a specific year 
+        if gmtime(os.path.getmtime(os.path.join(path,name)))[0]==2018:
+            filename = os.path.join(path,name)
+            sort_day(filename = filename, dest = dayDest, src = src)
+           
+print('done')
