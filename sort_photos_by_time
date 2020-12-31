@@ -1,0 +1,25 @@
+## useful if you want to look at just time lapse photos. 
+
+
+import os
+import shutil
+from time import gmtime, strftime
+from datetime import datetime
+
+src = r'[path of images here]' ## this is all MODISmatch
+dest = r'[path where you want them copied here]'
+
+#The function below finds the timelapse photos. 
+#It is in  GMT time zone. You will have to find the time your photos were taken in that time zone if you want to 
+# use gmtime()
+
+for path, subdirs, files in os.walk(src):
+    for name in files:
+        filename = os.path.join(path,name)
+        Time = str(strftime("%H:%M", gmtime(os.path.getmtime(filename))))
+        print(Time)
+        if (Time == '06:00'): ## need to make sure this is the right time zone 
+            ### [7] corresponds to the day of the year (not the day of the month)
+            ### this is on a range of 1-366 in case the folder sizes are really big
+            shutil.copy2(filename, dest+str('/')+str(gmtime(os.path.getmtime(filename))[7]))
+            print(filename)
