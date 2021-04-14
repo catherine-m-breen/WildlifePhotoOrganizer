@@ -1,0 +1,2 @@
+# WildlifePhotoOrganizer
+Various scripts to organize wildlife camera (i.e. remote camera) images for remote sensing and machine learning application. These scripts can be modified to sort by day, month, when the photos are uploaded with the following format [Camera Number]DateOfCameraChange_ImageNumber. For example 15_20190724 (42).JPG. It uses the images built in metadata and that the camera number is the first number separated by a "_".
