@@ -10,53 +10,64 @@ print('start')
 
 ### run this on a test subset first!
 #src = r'F:MODISmatchTEST'
-src = r'F:2018_VILTKAMERA_BACKUP_IS PUT IN TO IMPORT AN RUN TROUGH THE PROGRAM'
+src1 = r'F:2018_VILTKAMERA_BACKUP_IS PUT IN TO IMPORT AND RUN TROUGH THE PROGRAM'
+src2 = r'F:2019_VILTKAMERA_BACKUP_IS PUT IN TO IMPORT AND RUN TROUGH THE PROGRAM'
+src3 = r'F:2020_VILTKAMERA_BACKUP_IS PUT IN TO IMPORT AN RUN TROUGH THE PROGRAM'
 
-##update
-dest = r'F:MODISmatch/2018_ViltkameraQC' ## get a third harddrive
+src_list = [src1, src2, src3]
 
-MODIS = 'F:dateSearchMODIS.csv'  
-MODIS = pd.read_csv(csv)
-## filter out the NAs in all the data
-##
-#MODIS = XX
-MODIS.date = pd.to_datetime(NDSImodis.date)
+dest = r'F:MODISmatch_nonNaN_allyears' ## get a third harddrive
+
+MODIS = 'F:dateSearchMODIS.csv'  ## this has all the nulls eliminated
+MODIS = pd.read_csv(MODIS)
+MODIS.date = pd.to_datetime(MODIS.date)
 print(MODIS.head())
-
-
 
 print('checking path...')
 # Check whether the   
 # specified path is   
 # an existing file  
 
-src_isDir = os.path.isdir(src)
-print(src)
-print(src_isDir)
+## loop to go through all 3 Viltkamera folders
+for src in src_list:
+    
+    src_isDir = os.path.isdir(src)
+    print(src)
+    print(src_isDir)
 
-dest_isDir = os.path.isdir(src)
-print(dest)
-print(dest_isDir)
-print('done checking paths')
+    dest_isDir = os.path.isdir(src)
+    print(dest)
+    print(dest_isDir)
+    print('done checking paths')
 
-#count the number of files and make sure number matches for expected
-print('starting to count....')
-list = os.listdir(src) ## should this path be updated
-number_files = len(list)
-print(number_files)
-file_count = sum(len(files) for _, _, files in os.walk(src))
-print(file_count)
+    #count the number of files and make sure number matches for expected
+    print('starting to count....')
+    list = os.listdir(src) ## should this path be updated
+    number_files = len(list)
+    print(number_files)
+    file_count = sum(len(files) for _, _, files in os.walk(src))
+    print(file_count)
 
-print('starting file sort...')
+    print('starting file sort...')
 
-for path, subdirs, files in os.walk(src):
-	for name in files:
-		filename = os.path.join(path,name)		
-		Lokalitet = os.path.splitext(os.path.split(name)[1])[0].rsplit("_", 1)[0]
-		print(Lokalitet)
-		Date = str(strftime("%Y-%m-%d", gmtime(os.path.getmtime(filename))))
-		print(Date)
-		if (int(Lokalitet) in MODIS.LokalitetID) and (sum(Date == MODIS.date) > 0):
-			shutil.copy2(filename, dest+str('/')+str(gmtime(os.path.getmtime(filename))[0])+str('/')+str(gmtime(os.path.getmtime(filename))[1]))
-			print(datetime.now().strftime("%H:%M:%S %d"))
-			print(filename)
+    for path, subdirs, files in os.walk(src):
+            for name in files:
+                    filename = os.path.join(path,name)
+                    #only one .JPG images    
+                    if os.path.splitext(filename)[1].lower() in ('.jpg', '.jpeg'):
+                        Lokalitet = os.path.splitext(os.path.split(name)[1])[0].rsplit("_", 1)[0]
+                        #print(Lokalitet)
+                        Date = str(strftime("%Y-%m-%d", gmtime(os.path.getmtime(filename))))
+                        #Time = str(strftime("%S", gmtime(os.path.getmtime(filename))))
+                        #if (Time == '00'): ## these are the timelapse photos 
+                        try:
+                            subset = MODIS.loc[(MODIS["LokalitetID"] == int(Lokalitet))]
+                            #print(Date)
+                            if (int(Lokalitet) in MODIS.LokalitetID) and (sum(Date == subset.date) > 0):
+                                shutil.copy2(filename, dest+str('/')+str(gmtime(os.path.getmtime(filename))[0])+str('/')+str(gmtime(os.path.getmtime(filename))[1]))
+                                print(datetime.now().strftime("%H:%M:%S %d"))
+                                print(filename)
+                        except ValueError:
+                            print('ERROR',filename)
+
+
