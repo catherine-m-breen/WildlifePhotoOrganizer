@@ -35,7 +35,7 @@ for src in src_list:
     print(src)
     print(src_isDir)
 
-    dest_isDir = os.path.isdir(src)
+    dest_isDir = os.path.isdir(dest)
     print(dest)
     print(dest_isDir)
     print('done checking paths')
