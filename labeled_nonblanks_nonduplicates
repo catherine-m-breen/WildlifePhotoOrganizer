@@ -1,0 +1,44 @@
+import os
+import shutil
+from time import gmtime, strftime
+from datetime import datetime
+import pandas as pd
+
+print('start')
+
+src = r'Z:images/labeled'
+
+dest = r'Z:images/nonblanks_noduplicates' 
+
+labels = 'Z:images/labels_nonblanks.csv'  
+labels = pd.read_csv(labels)
+
+print('checking path...')
+# Check whether the   
+# specified path is   
+# an existing file  
+
+src_isDir = os.path.isdir(src)
+print(src)
+print(src_isDir)
+
+dest_isDir = os.path.isdir(src)
+print(dest)
+print(dest_isDir)
+print('done checking paths')
+
+#count the number of files and make sure number matches for expected
+print('starting to count....')
+list = os.listdir(src) ## should this path be updated
+file_count = sum(len(files) for _, _, files in os.walk(src))
+print(file_count)
+
+print('starting file sort...')
+
+for path, subdirs, files in os.walk(src):
+	for name in files:
+		filename = os.path.join(path,name)
+		if len((labels[labels['File'] == name])) > 0 :
+			shutil.copy2(filename, dest)
+
+print('done')
