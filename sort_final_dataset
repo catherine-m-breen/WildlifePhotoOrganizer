@@ -1,0 +1,54 @@
+### pull out all labeled images, for image diagnostics 
+
+
+import os
+import shutil
+from time import gmtime, strftime
+from datetime import datetime
+import pandas as pd
+
+print('start')
+
+## make sure these paths are right! 
+
+### run this on a test subset first!
+#src = r'F:MODISmatchTEST'
+src = r'F:MODIS.....'
+dest = r'F:SampleSize' ## get a third harddrive
+
+# data_wCovariates_Sept16-2021.csv
+dataset = 'F:data_wCovariates_Sept16-2021.csv  
+dataset = pd.read_csv(csv)
+print(dataset.head())
+
+print('checking path...') 
+src_isDir = os.path.isdir(src)
+print(src)
+print(src_isDir)
+
+dest_isDir = os.path.isdir(src)
+print(dest)
+print(dest_isDir)
+print('done checking paths')
+
+#count the number of files and make sure number matches for expected
+print('starting to count....') ## final set of images that were examined
+list = os.listdir(src) ## should this path be updated
+number_files = len(list)
+print(number_files)
+file_count = sum(len(files) for _, _, files in os.walk(src))
+print(file_count)
+
+print('starting file sort...')
+
+### copy final image folder so that we look at it in Matlab
+
+for path, subdirs, files in os.walk(src):
+	for name in files:
+		filename = os.path.join(path,name)		
+		if (filename) in dataset.File:
+			shutil.copy2(filename, dest)
+			print(filename)
+            
+            
+
