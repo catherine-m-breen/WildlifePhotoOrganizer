@@ -41,14 +41,9 @@ print(file_count)
 print('starting file sort...')
 
 for path, subdirs, files in os.walk(src):
-	for name in files:
-		filename = os.path.join(path,name)		
-		Lokalitet = os.path.splitext(os.path.split(name)[1])[0].rsplit("_", 1)[0]
-		print(Lokalitet)
-		Date = str(strftime("%Y-%m-%d", gmtime(os.path.getmtime(filename))))
-		print(Date)
-		if (int(Lokalitet) in MODIS.LokalitetID) and (sum(Date == MODIS.date) > 0):
-			shutil.copy2(filename, dest+str('/')+str(gmtime(os.path.getmtime(filename))[0])+str('/')+str(gmtime(os.path.getmtime(filename))[1]))
-			print(datetime.now().strftime("%H:%M:%S %d"))
-			print(filename)
-
+    for name in files:
+        filename = os.path.join(path,name)
+        #print(filename)
+        if sum(dataset.File == name) > 0:
+            shutil.copy2(filename, dest)
+            print(filename)
