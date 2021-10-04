@@ -1,3 +1,6 @@
+### pull out all labeled images, for image diagnostics 
+
+
 import os
 import shutil
 from time import gmtime, strftime
@@ -9,21 +12,15 @@ print('start')
 ## make sure these paths are right! 
 
 ### run this on a test subset first!
-#src = r'F:MODISmatchTEST'
-src = r'F:2018_VILTKAMERA_BACKUP_IS PUT IN TO IMPORT AN RUN TROUGH THE PROGRAM'
+src = r'F:MODISmatch_nonNaN_allyears'
+dest = r'G:LabeledImages/' ## get a third harddrive
 
-dest = r'F:MODISmatch/2018_ViltkameraQC' ## get a third harddrive
+# data_wCovariates_Sept16-2021.csv
+dataset = 'G:data_wCovariates_Sept16-2021.csv'  
+dataset = pd.read_csv(dataset)
+print(dataset.head())
 
-MODIS = 'F:dateSearchMODIS.csv'  
-MODIS = pd.read_csv(csv)
-MODIS.date = pd.to_datetime(NDSImodis.date)
-print(MODIS.head())
-
-print('checking path...')
-# Check whether the   
-# specified path is   
-# an existing file  
-
+print('checking path...') 
 src_isDir = os.path.isdir(src)
 print(src)
 print(src_isDir)
@@ -34,7 +31,7 @@ print(dest_isDir)
 print('done checking paths')
 
 #count the number of files and make sure number matches for expected
-print('starting to count....')
+print('starting to count....') ## final set of images that were examined
 list = os.listdir(src) ## should this path be updated
 number_files = len(list)
 print(number_files)
