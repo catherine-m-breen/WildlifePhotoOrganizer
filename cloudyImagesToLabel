@@ -1,0 +1,109 @@
+import os
+import shutil
+from time import gmtime, strftime
+from datetime import datetime
+import pandas as pd
+
+print('start')
+
+#src_list = [src1, src2, src3]
+src = r'/Users/cmbreen/Documents/Bestphotos/guape2'
+
+dest = r'/Volumes/CatBreen/CloudyImagesToLabel'
+
+### run this on a test subset first!
+
+src1 = r'/Volumes/CBreen/2018_VILTKAMERA_BACKUP_IS PUT IN TO IMPORT AND RUN TROUGH THE PROGRAM'
+src2 = r'/Volumes/CBreen/2019_VILTKAMERA_BACKUP_IS PUT IN TO IMPORT AND RUN TROUGH THE PROGRAM'
+src3 = r'/Volumes/CBreen/2020_VILTKAMERA_BACKUP_IS PUT IN TO IMPORT AN RUN TROUGH THE PROGRAM'
+
+#src1 = '/Users/cmbreen/Documents/Bestphotos/guape2'
+#src2 = '/Users/cmbreen/Documents/Bestphotos/gaupe'
+
+
+src_list = [src1, src2, src3]
+
+## already inspected photos
+#MODIS = 'F:MODIS_na_Values.csv'  ## this has all the nulls eliminated
+### glob glob glob 
+AlreadyInspectedPhotos = pd.read_csv('/Volumes/CatBreen/fullData_glob2.csv')
+
+MOD10A1F_CP = '/Users/cmbreen/Documents/RemoteSensingPaper/MOD101AF_CPmosaic_projSRORG2.csv' ## 
+MOD10A1F_CP = pd.read_csv(MOD10A1F_CP)
+MOD10A1F_CP.imageId = MOD10A1F_CP['imageId'].str.split('T',expand=True)[0]
+MOD10A1F_CP.imageId = pd.to_datetime(MOD10A1F_CP.imageId)
+print(MOD10A1F_CP.head())
+
+### empty dataframes
+## cap each at the prescribed lengths
+
+tracker = pd.DataFrame(columns=['FileName','month', 'day', 'year', 'LokalitetID', 'mean'])
+
+
+## loop to go through all 3 Viltkamera folders
+for src in src_list:
+   
+    src_isDir = os.path.isdir(src)
+    print(src)
+    print(src_isDir)
+
+    dest_isDir = os.path.isdir(dest)
+    print(dest)
+    print(dest_isDir)
+    print('done checking paths')
+
+    #count the number of files and make sure number matches for expected
+    print('starting to count....')
+    list = os.listdir(src) ## should this path be updated
+    number_files = len(list)
+    print(number_files)
+    file_count = sum(len(files) for _, _, files in os.walk(src))
+    print(file_count)
+
+    print('starting file sort...')
+
+
+
+    for path, subdirs, files in os.walk(src):
+            for name in files:
+                    filename = os.path.join(path,name)
+                    #print(filename)
+                    #only one .JPG images    
+                    if os.path.splitext(filename)[1].lower() in ('.jpg', '.jpeg'):
+                        Lokalitet = os.path.splitext(os.path.split(name)[1])[0].rsplit("_", 1)[0]
+                        #print(Lokalitet)
+                        Date = str(strftime("%Y-%m-%d", gmtime(os.path.getmtime(filename))))
+                        #print(Date)
+                        #Time = str(strftime("%S", gmtime(os.path.getmtime(filename))))
+                        #if (Time == '00'): ## these are the timelapse photos
+                        try:
+                            ## all the values from that camera
+                            subset = MOD10A1F_CP.loc[(MOD10A1F_CP["LokalitetID"] == int(Lokalitet))]
+                            #print(subset)
+                            ## all the values from that day at that camera
+                            subset2 = subset.loc[(subset.imageId == Date)]
+                            try:
+                                meanvalue = subset2.iloc[0]['mean']
+                                #print(Date)
+                                ## could adjust the 2.0 to 3.0 
+                                if (int(Lokalitet) in MOD10A1F_CP.LokalitetID) and (meanvalue > 2.0):
+                                    month = str(gmtime(os.path.getmtime(filename))[1])
+                                    destination = dest+str('/')+month
+                                    image_count = sum(len(files) for _, _, files in os.walk(destination))
+                                    year = str(gmtime(os.path.getmtime(filename))[0])    
+                                    day = str(gmtime(os.path.getmtime(filename))[2]) 
+                    ### needs to be lower than 501 X
+                    ### not from the same day (use the dataframes), we are allowing 2 from each date & camera
+                    ### not previously examined X
+                                    if (image_count < 501) and (str(name) not in str(AlreadyInspectedPhotos['File'])) and (len(tracker.query('month == month & day == day & year == year & LokalitetID == @Lokalitet')) < 2):
+                                        row = {'FileName' : name, 'month' : month, 'day' : day, 'year': year, 'LokalitetID':Lokalitet, 'mean':meanvalue}
+                                        tracker = tracker.append( row, ignore_index = True)
+                                        #shutil.copy2(filename, destination)
+                                        #print(datetime.now().strftime("%H:%M:%S %d")
+                                        print(filename)
+                                         #if filename not in AlreadyInspectedPhotos["FileName"]
+                                        print(destination)
+                            except IndexError:
+                                print('no CP value', filename)
+                        except ValueError:
+                            print('ERROR',filename)
