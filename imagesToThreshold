@@ -1,0 +1,139 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# # images to threshold
+
+# We have ~8000 images that we rated on a scale of 0-4. We will subset that to a 100 and use that to train the ML model. 
+
+# In[1]:
+
+
+import os 
+import shutil 
+from time import gmtime, strftime 
+from datetime import datetime 
+import pandas as pd  
+
+
+# In[45]:
+
+
+## src is a folder of 8000 images, but we just want 75 or so. 
+src = r"/Users/cmbreen/Documents/Chapter 2/LabeledImages"
+
+dest = r"/Users/cmbreen/Documents/Chapter 1/ImageSegmentation/ImagesToThreshold_Tanvi"
+### make this folder on Desktop
+## with dest add empty month folders titled 1 ,2 3, 4, 10, 11, 12 
+
+
+# In[28]:
+
+
+## check paths
+print('start')
+src_isDir = os.path.isdir(src)
+print(src)
+print(src_isDir)
+dest_isDir = os.path.isdir(dest)
+print(dest)
+print(dest_isDir)
+print('done checking paths')
+
+
+# In[31]:
+
+
+#count the number of files and make sure number matches for expected
+print('starting to count....')
+check = os.listdir(src) ## should this path be updated
+number_files = len(check)
+print(number_files)
+
+
+# In[32]:
+
+
+image_count = [] ## less than 75 
+### this pandas df will be ~75 rows, where each row is a different image, with corresponding information 
+tracker = pd.DataFrame(columns=["FileName","month", "day", "year", "ID"]) 
+
+
+# In[86]:
+
+
+print('start')
+
+for path, subdirs, files in os.walk(src): 
+    for name in files: ## name is the image filename 
+        filename = os.path.join(path,name) ##“fullpath/subfolder/XXX_XXXXX.JPG” 
+                        # only one .JPG images because there are sometimes videos   
+        print(filename)
+        if os.path.splitext(filename)[1].lower() in ('.jpg', '.jpeg'): 
+            try:
+                CameraID = os.path.splitext(os.path.split(name)[1])[0].rsplit("_", 1)[0] 
+                                        ## use gmtime to get when the image was taken 
+                Date = str(strftime("%Y-%m-%d", gmtime(os.path.getmtime(filename))))
+                month = str(gmtime(os.path.getmtime(filename))[1]) 
+                day = str(gmtime(os.path.getmtime(filename))[2]) 
+                year = str(gmtime(os.path.getmtime(filename))[0])    
+                destination = dest+str('/')
+                image_count = sum(len(files) for _, _, files in os.walk(destination)) 
+                print(destination)
+### no more than 75 total 
+### needs to be lower than 15 images in each month 
+### we are allowing 1 camera per month  
+## add in if statement that we only want images where 'month' corresponds to str(1), str(2), str(3), str(4), str(10), str(11), str(12)
+                if (image_count < 111) and (len(tracker.query('month == @month and year == @year and ID == @CameraID')) < 1) and (month == str(1)):  
+                    row = {'FileName' : name, 'month' : month, "day":day, "year": year, "ID" :CameraID} 
+                    tracker = tracker.append(row, ignore_index = True) 
+                    shutil.copy2(filename, destination) 
+                    print(filename) ## only have about 75 print statements 
+            except ValueError: 
+                print('ERROR',filename) 
+
+ 
+
+ 
+
+
+# In[79]:
+
+
+(image_count < 75) and (len(tracker.query('month == @month and year == @year and ID == @CameraID')) < 1)
+
+
+# In[48]:
+
+
+(image_count < 75)
+
+
+# In[50]:
+
+
+(len(tracker.query('month' == month and 'year' == year and 'ID'== CameraID)) < 1)
+
+
+# In[72]:
+
+
+len(tracker.query('month == @month and year == @year and ID == @CameraID')) < 1
+
+
+# In[67]:
+
+
+tracker.query('month == @month and year == @year and ID == @CameraID')
+
+
+# In[84]:
+
+
+tracker
+
+
+# In[ ]:
+
+
+
+
